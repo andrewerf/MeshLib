@@ -73,7 +73,8 @@ ELSE()
   SET(MR_FEDORA TRUE)
  ENDIF() # Fedora
 
- IF(MR_OPENVDB)
+ # Arch has more recent tbb, so openvdb should also be taken from repos
+ IF(MR_OPENVDB AND NOT ${distro} STREQUAL "Arch Linux")
   set(OPENVDB_ENABLE_UNINSTALL OFF)
   set(OPENVDB_ENABLE_INSTALL OFF)
   set(OPENVDB_CORE_SHARED "ON")
