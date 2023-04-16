@@ -54,8 +54,8 @@ ELSE()
  # check version (major)
  file(STRINGS /etc/os-release version_id REGEX "^VERSION_ID=")
  string(REGEX REPLACE "VERSION_ID=\"(.*)\"" "\\1" version_id "${version_id}")
- string(FIND ${version_id} "." dot-pos)
- string(SUBSTRING ${version_id} 0 ${dot-pos} version_id)
+ string(FIND "${version_id}" "." dot-pos)
+ string(SUBSTRING "${version_id}" 0 ${dot-pos} version_id)
  message("using ${distro} ${version_id}")
 
  IF( ${distro} STREQUAL "Ubuntu")
@@ -64,6 +64,10 @@ ELSE()
    SET(MR_OPENVDB_OLD TRUE)
   ENDIF() # Ubuntu 20
  ENDIF() # Ubuntu
+
+ IF( ${distro} STREQUAL "Arch Linux" )
+     SET(MR_OPENVDB TRUE)
+ ENDIF()
 
  IF( ${distro} STREQUAL "Fedora Linux")
   SET(MR_FEDORA TRUE)
