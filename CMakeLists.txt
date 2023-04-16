@@ -24,8 +24,10 @@ IF(APPLE)
 ELSE()
  # uncomment to print compile time of each translation unit,
  # such print format is selected to simplify load in Excel with fields (user time, system time, command) subdivision by commas
+IF( NOT ${MR_ARCH} )
  set_property(GLOBAL PROPERTY RULE_LAUNCH_COMPILE "/usr/bin/time -f \",%U,%S,%C\" -a -o compile_timings.txt")
  set_property(GLOBAL PROPERTY RULE_LAUNCH_LINK "/usr/bin/time -f \",%U,%S,%C\" -a -o link_timings.txt")
+ENDIF()
 ENDIF() # APPLE
 ENDIF() # NOT MR_EMSCRIPTEN
 
@@ -61,6 +63,7 @@ find_package(PkgConfig REQUIRED)
 
 SET(MR_UBUNTU FALSE) # any Ubuntu version
 SET(MR_UBUNTU22 FALSE) # Ubuntu 22.*
+SET(MR_ARCH FALSE) # Arch linux
 SET(MR_FEDORA FALSE)
 SET(MR_PLATFORM "UNKNOWN")
 
@@ -86,8 +89,8 @@ ELSE()
  # check version (major)
  file(STRINGS /etc/os-release version_id REGEX "^VERSION_ID=")
  string(REGEX REPLACE "VERSION_ID=\"(.*)\"" "\\1" version_id "${version_id}")
- string(FIND ${version_id} "." dot-pos)
- string(SUBSTRING ${version_id} 0 ${dot-pos} version_id)
+ string(FIND "${version_id}" "." dot-pos)
+ string(SUBSTRING "${version_id}" 0 ${dot-pos} version_id)
  message("using ${distro} ${version_id}")
  SET(MR_PLATFORM "${distro}_${version_id}")
 
@@ -101,11 +104,17 @@ ELSE()
  IF( ${distro} STREQUAL "Fedora Linux")
   SET(MR_FEDORA TRUE)
  ENDIF() # Fedora
+
+ IF( ${distro} STREQUAL "Arch Linux" )
+  SET(MR_ARCH TRUE)
+ ENDIF()
+
+ include_directories(/usr/include)
 ENDIF() # APPLE
 add_definitions( -DMR_PLATFORM="${MR_PLATFORM}" )
 message("platform: ${MR_PLATFORM}")
 
-IF(${MR_UBUNTU22} OR APPLE)
+IF(${MR_UBUNTU22} OR APPLE OR ${MR_ARCH})
  SET(MR_PYTHON_VERSION 3.10)
 ELSEIF(${MR_UBUNTU})
  SET(MR_PYTHON_VERSION 3.8)
@@ -165,7 +174,7 @@ pkg_check_modules(GTKMM gtkmm-3.0)
 pkg_check_modules(JSONCPP jsoncpp)
 include_directories(${JSONCPP_INCLUDE_DIRS})
 
-IF(${MR_FEDORA} OR ${MR_UBUNTU22})
+IF(${MR_FEDORA} OR ${MR_UBUNTU22} OR ${MR_ARCH})
  add_compile_definitions(SPDLOG_FMT_EXTERNAL)
 ENDIF()
 
