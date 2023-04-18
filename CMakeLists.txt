@@ -109,7 +109,6 @@ ELSE()
   SET(MR_ARCH TRUE)
  ENDIF()
 
- include_directories(/usr/include)
 ENDIF() # APPLE
 add_definitions( -DMR_PLATFORM="${MR_PLATFORM}" )
 message("platform: ${MR_PLATFORM}")
