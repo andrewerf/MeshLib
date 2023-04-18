@@ -106,7 +106,9 @@ __device__ ClosestPointRes closestPointInTriangle( const float3& p, const float3
     return { { v, w }, a + ab * v + ac * w };
 }
 
-__global__ void kernel( const float3* points, const Node3* nodes, const float3* meshPoints, const HalfEdgeRecord* edges, const int* edgePerFace, MeshProjectionResult* resVec, const Matrix4 xf, const Matrix4 refXf, float upDistLimitSq, float loDistLimitSq, size_t size )
+__global__ void kernel( const float3* points,
+    const Node3* nodes, const float3* meshPoints, const FaceToThreeVerts* faces,
+    MeshProjectionResult* resVec, const Matrix4 xf, const Matrix4 refXf, float upDistLimitSq, float loDistLimitSq, size_t size )
 {
     if ( size == 0 )
     {
@@ -119,9 +121,8 @@ __global__ void kernel( const float3* points, const Node3* nodes, const float3* 
         return;
 
     const auto pt = xf.isIdentity ? points[index] : xf.transform( points[index] );
-    auto& res = resVec[index];
-    res.distSq = upDistLimitSq;    
-    res.mtp.edgeId = -1;
+    MeshProjectionResult res;
+    res.distSq = upDistLimitSq;
     res.proj.faceId = -1;
     struct SubTask
     {
@@ -161,13 +162,10 @@ __global__ void kernel( const float3* points, const Node3* nodes, const float3* 
         if ( node.leaf() )
         {
             const auto face = node.leafId();
-           
-            int edge = edgePerFace[face];
-            float3 a = meshPoints[edges[edge].org];
-            edge = edges[ edge ^ 1 ].prev;
-            float3 b = meshPoints[edges[edge].org];
-            edge = edges[edge ^ 1].prev;
-            float3 c = meshPoints[edges[edge].org];
+            const auto & vs = faces[face].verts;
+            float3 a = meshPoints[vs[0]];
+            float3 b = meshPoints[vs[1]];
+            float3 c = meshPoints[vs[2]];
 
             if ( !refXf.isIdentity )
             {
@@ -185,7 +183,7 @@ __global__ void kernel( const float3* points, const Node3* nodes, const float3* 
                 res.distSq = distSq;
                 res.proj.point = closestPointRes.proj;
                 res.proj.faceId = face;
-                res.mtp = MeshTriPoint{ edgePerFace[face], closestPointRes.bary.x, closestPointRes.bary.y };
+                res.tp = MeshTriPoint{ -1, closestPointRes.bary.x, closestPointRes.bary.y };
                 if ( distSq <= loDistLimitSq )
                     break;
             }
@@ -204,16 +202,17 @@ __global__ void kernel( const float3* points, const Node3* nodes, const float3* 
         addSubTask( s1 ); // larger distance to look later
         addSubTask( s2 ); // smaller distance to look first
     }
+    resVec[index] = res;
 }
 
 void meshProjectionKernel( const float3* points, 
-                           const Node3* nodes, const float3* meshPoints, const HalfEdgeRecord* edges, const int* edgePerFace, 
+                           const Node3* nodes, const float3* meshPoints, const FaceToThreeVerts* faces,
                            MeshProjectionResult* resVec, const Matrix4 xf, const Matrix4 refXf, float upDistLimitSq, float loDistLimitSq, size_t size )
 {
     int maxThreadsPerBlock = 0;
     cudaDeviceGetAttribute( &maxThreadsPerBlock, cudaDevAttrMaxThreadsPerBlock, 0 );
-    int numBlocks = ( int( size ) + maxThreadsPerBlock - 1 ) / maxThreadsPerBlock;    
-    kernel << <numBlocks, maxThreadsPerBlock >> > ( points, nodes, meshPoints, edges, edgePerFace, resVec, xf, refXf, upDistLimitSq, loDistLimitSq, size );
+    int numBlocks = ( int( size ) + maxThreadsPerBlock - 1 ) / maxThreadsPerBlock;
+    kernel << <numBlocks, maxThreadsPerBlock >> > ( points, nodes, meshPoints, faces, resVec, xf, refXf, upDistLimitSq, loDistLimitSq, size );
 }
 
 }}
