@@ -10,7 +10,7 @@ printf "Project build script started.\nYou could find output in ${logfile}\n"
 if [[ $OSTYPE != 'darwin'* ]]; then
   source /etc/os-release
   printf "${NAME} ${VERSION_ID}\n"
-  if [ "${NAME}" == "Fedora Linux" ]; then
+  if [ "${NAME}" == "Fedora Linux" ] || [ "${NAME}" == "Arch Linux" ]; then
    if [ "${CMAKE_C_COMPILER}" = "" ]; then
     CMAKE_C_COMPILER=/usr/bin/gcc
    fi
