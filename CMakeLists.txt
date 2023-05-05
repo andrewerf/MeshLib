@@ -216,7 +216,7 @@ IF(NOT MR_EMSCRIPTEN)
   add_subdirectory(${PROJECT_SOURCE_DIR}/mrmeshnumpy ./mrmeshnumpy)
   add_subdirectory(${PROJECT_SOURCE_DIR}/mrviewerpy ./mrviewerpy)
   add_subdirectory(${PROJECT_SOURCE_DIR}/meshconv ./meshconv)
-  IF(NOT APPLE)
+  IF(NOT APPLE AND NOT ${MRMESH_NO_CUDA})
     add_subdirectory(${PROJECT_SOURCE_DIR}/MRCuda ./MRCuda)
   ENDIF()
 ENDIF() # NOT MR_EMSCRIPTEN
