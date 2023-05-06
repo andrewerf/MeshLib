@@ -6,8 +6,8 @@ project (MeshLib_thirdparty CXX)
 
 
 function(add_subdirectory_if_exists path)
-    if ( EXISTS path/CMakeLists.txt )
-        add_subdirectory(path)
+    if(EXISTS ${PROJECT_SOURCE_DIR}/${path}/CMakeLists.txt)
+        add_subdirectory(${path})
     endif ()
 endfunction()
 
