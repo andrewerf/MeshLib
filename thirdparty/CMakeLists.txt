@@ -106,7 +106,7 @@ ELSE()
  add_subdirectory_if_exists(./cpr)
 ENDIF()
 
-add_subdirectory_if_exists(./OpenCTM ./OpenCTM)
+add_subdirectory_if_exists(./OpenCTM)
 option(PHMAP_INSTALL "" ON)
 add_subdirectory_if_exists(./parallel-hashmap)
 
