@@ -4,6 +4,7 @@
 #include "MRVector3.h"
 #include <cstring>
 #include <functional>
+#include <cstdint>
 
 namespace std
 {
